@@ -22,10 +22,34 @@ pipeline {
             steps{
                 sh 'mvn clean test'
             }
-        }  
+        }
+
         stage('Package'){
             steps{
                 sh 'mvn clean package'
+            }
+        }
+
+        stage('Verify'){
+            steps{
+                sh mvn clean verfiy
+            }
+        }
+
+        stage('Code Coverage'){
+            steps{
+                sh 'mvn jacoco:report'
+            }
+
+            post{
+                always{
+                    jacoco{
+                       execPattern: '**/target/jacoco.exec',
+                       classPattern: '**/target/classes',
+                       sourcePattern: '**/src/main/java',
+                       inclusionPattern: '**/*.class'
+                    }
+                }
             }
         }          
 
