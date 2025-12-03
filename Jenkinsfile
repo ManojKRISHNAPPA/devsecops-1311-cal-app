@@ -30,6 +30,17 @@ pipeline {
                 }
             }
         }
+        stage('Mutation Testing') {
+            steps {
+                sh 'mvn org.pitest:pitest-maven:mutationCoverage'
+            }
+            post {
+                always {
+                    // Archive PIT report in Jenkins
+                    archiveArtifacts artifacts: 'target/pit-reports/*', allowEmptyArchive: true
+                }
+            }
+        }
 
         stage('Package') {
             steps {

@@ -122,6 +122,38 @@
                     <target>17</target>
                 </configuration>
             </plugin>
+<!-- PIT mutation testing plugin -->
+        <plugin>
+            <groupId>org.pitest</groupId>
+            <artifactId>pitest-maven</artifactId>
+            <version>1.15.2</version>
+            <executions>
+                <execution>
+                    <id>pitest</id>
+                    <goals>
+                        <goal>mutationCoverage</goal>
+                    </goals>
+                    <phase>verify</phase>
+                </execution>
+            </executions>
+            <configuration>
+                <!-- Your target classes for mutation testing -->
+                <targetClasses>
+                    <param>com.example.*</param>
+                </targetClasses>
+                <!-- Your test classes -->
+                <targetTests>
+                    <param>com.example.*Test</param>
+                </targetTests>
+                <!-- Output formats -->
+                <outputFormats>
+                    <param>XML</param>
+                    <param>HTML</param>
+                </outputFormats>
+                <mutationThreshold>70</mutationThreshold> <!-- Fail build if coverage < 70% -->
+                <verbose>true</verbose>
+            </configuration>
+        </plugin>
 
         </plugins>
     </build>
