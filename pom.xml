@@ -17,7 +17,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>3.5.4</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
 
     <properties>
@@ -25,6 +25,9 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>17</java.version>
         <tomcat.version>10.1.35</tomcat.version>
+        <junit.jupiter.version>5.10.0</junit.jupiter.version>
+        <jacoco.version>0.8.12</jacoco.version>
+        <pitest.version>1.15.2</pitest.version>
     </properties>
 
     <dependencies>
@@ -88,20 +91,29 @@
                 </configuration>
             </plugin>
 
-            <!-- JaCoCo plugin for unit test coverage -->
+            <!-- Maven Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
+
+            <!-- JaCoCo plugin -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.12</version>
+                <version>${jacoco.version}</version>
                 <executions>
-                    <!-- Prepare agent before tests -->
                     <execution>
                         <id>prepare-agent</id>
                         <goals>
                             <goal>prepare-agent</goal>
                         </goals>
                     </execution>
-                    <!-- Generate coverage report after tests -->
                     <execution>
                         <id>report</id>
                         <phase>verify</phase>
@@ -112,48 +124,35 @@
                 </executions>
             </plugin>
 
-            <!-- Compiler Plugin for Java 17 -->
+            <!-- PIT mutation testing plugin -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.11.0</version>
+                <groupId>org.pitest</groupId>
+                <artifactId>pitest-maven</artifactId>
+                <version>${pitest.version}</version>
+                <executions>
+                    <execution>
+                        <id>pitest</id>
+                        <goals>
+                            <goal>mutationCoverage</goal>
+                        </goals>
+                        <phase>verify</phase>
+                    </execution>
+                </executions>
                 <configuration>
-                    <source>17</source>
-                    <target>17</target>
+                    <targetClasses>
+                        <param>com.example.*</param>
+                    </targetClasses>
+                    <targetTests>
+                        <param>com.example.*Test</param>
+                    </targetTests>
+                    <outputFormats>
+                        <param>XML</param>
+                        <param>HTML</param>
+                    </outputFormats>
+                    <mutationThreshold>70</mutationThreshold>
+                    <verbose>true</verbose>
                 </configuration>
             </plugin>
-<!-- PIT mutation testing plugin -->
-        <plugin>
-            <groupId>org.pitest</groupId>
-            <artifactId>pitest-maven</artifactId>
-            <version>1.15.2</version>
-            <executions>
-                <execution>
-                    <id>pitest</id>
-                    <goals>
-                        <goal>mutationCoverage</goal>
-                    </goals>
-                    <phase>verify</phase>
-                </execution>
-            </executions>
-            <configuration>
-                <!-- Your target classes for mutation testing -->
-                <targetClasses>
-                    <param>com.example.*</param>
-                </targetClasses>
-                <!-- Your test classes -->
-                <targetTests>
-                    <param>com.example.*Test</param>
-                </targetTests>
-                <!-- Output formats -->
-                <outputFormats>
-                    <param>XML</param>
-                    <param>HTML</param>
-                </outputFormats>
-                <mutationThreshold>70</mutationThreshold> <!-- Fail build if coverage < 70% -->
-                <verbose>true</verbose>
-            </configuration>
-        </plugin>
 
         </plugins>
     </build>
