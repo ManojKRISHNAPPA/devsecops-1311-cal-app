@@ -64,21 +64,31 @@ pipeline {
             }
         }   
 
-        stage('OWASP FS Scan') {
-            steps {
-                dependencyCheck additionalArguments: '''
-                    --scan ./ 
-                    --disableYarnAudit 
-                    --disableNodeAudit 
-                    --nvdApiKey 0ad9f72c-7dcd-4a1d-af36-83d8cc7f3526 
-                    --noupdate
-                ''', odcInstallation: 'DC'
+        // stage('OWASP FS Scan') {
+        //     steps {
+        //         dependencyCheck additionalArguments: '''
+        //             --scan ./ 
+        //             --disableYarnAudit 
+        //             --disableNodeAudit 
+        //             --nvdApiKey 0ad9f72c-7dcd-4a1d-af36-83d8cc7f3526 
+        //             --noupdate
+        //         ''', odcInstallation: 'DC'
 
-                archiveArtifacts(
-                    allowEmptyArchive: true, 
-                    artifacts: '**/dependency-check-report.xml'
-                )
-                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+        //         archiveArtifacts(
+        //             allowEmptyArchive: true, 
+        //             artifacts: '**/dependency-check-report.xml'
+        //         )
+        //         dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+        //     }
+        // }
+        stage('Vulnerability Scan - Docker ') {
+            steps {
+                sh "mvn dependency-check:check"
+            }
+            post {
+                always {
+                dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
+                }
             }
         }
     }
