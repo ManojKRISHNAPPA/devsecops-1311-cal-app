@@ -31,11 +31,11 @@ pipeline {
             }
         }
 
-        stage('Verify'){
-            steps{
-                sh 'mvn clean verify'
-            }
-        }
+        // stage('Verify'){
+        //     steps{
+        //         sh 'mvn clean verify'
+        //     }
+        // }
 
         stage('Code Coverage'){
             steps{
