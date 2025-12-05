@@ -92,5 +92,13 @@ pipeline {
                 }
             }
         }
+
+        stage('Docker-Image-creation'){
+            steps{
+                sh '''
+                    docker build -t cal-app:1 .
+                '''
+            }
+        }
     }
 }
