@@ -7,6 +7,7 @@ pipeline {
     }
 
     stages{
+
         stage('Git checkout'){
             steps{
                 git url: 'https://github.com/ManojKRISHNAPPA/devsecops-1311-cal-app.git', branch: 'main'
@@ -31,17 +32,10 @@ pipeline {
             }
         }
 
-        // stage('Verify'){
-        //     steps{
-        //         sh 'mvn clean verify'
-        //     }
-        // }
-
         stage('Code Coverage'){
             steps{
                 sh 'mvn jacoco:report'
             }
-
             post{
                 always{
                     jacoco(
@@ -54,21 +48,10 @@ pipeline {
             }
         }  
 
-        // stage('Sonar-Qube-Analysis'){
-        //     steps{
-        //         sh '''
-        //             mvn sonar:sonar \
-        //             -Dsonar.projectKey=cal-app \
-        //             -Dsonar.host.url=http://34.220.193.218:9000 \
-        //             -Dsonar.login=b9f45956612ec722b9471af172f8f74cec8ac6bd
-        //         '''
-        //     }
-        // }
-        stage('build && SonarQube analysis') {
+        stage('Build & SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
                     sh 'mvn clean package org.sonarsource.scanner.maven:sonar-maven-plugin:sonar'
-                    
                 }
             }
         }
@@ -76,23 +59,27 @@ pipeline {
         stage("Quality Gate") {
             steps {
                 timeout(time: 1, unit: 'HOURS') {
-                    // Parameter indicates whether to set pipeline to UNSTABLE if Quality Gate fails
-                    // true = set pipeline to UNSTABLE, false = don't
                     waitForQualityGate abortPipeline: true
                 }
             }
         }   
 
-        stage('Vulnerability Scan - Docker ') {
+        stage('OWASP FS Scan') {
             steps {
-                sh "mvn dependency-check:check"
-            }
-            post {
-                always {
-                dependencyCheckPublisher pattern: 'target/dependency-check-report.xml'
-                }
-            }
-        }  
+                dependencyCheck additionalArguments: '''
+                    --scan ./ 
+                    --disableYarnAudit 
+                    --disableNodeAudit 
+                    --nvdApiKey 0ad9f72c-7dcd-4a1d-af36-83d8cc7f3526 
+                    --noupdate
+                ''', odcInstallation: 'DC'
 
+                archiveArtifacts(
+                    allowEmptyArchive: true, 
+                    artifacts: '**/dependency-check-report.xml'
+                )
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
     }
 }
