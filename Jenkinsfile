@@ -6,6 +6,13 @@ pipeline {
         maven 'maven'
     }
 
+    environment {
+        IMAGE_NAME = "manojkrishnappa/dev-sec-ops:${GIT_COMMIT}"
+        AWS_REGION = "us-west-2"
+        CLUSTER_NAME = "itkannadigaru-cluster"
+        NAMESPACE = "microdegree"
+    }
+
     stages {
 
         stage('Git checkout') {
@@ -104,10 +111,29 @@ pipeline {
         stage('Docker Image Creation') {
             steps {
                 sh '''
-                    docker build -t cal-app:1 .
+                    printenv
+                    docker build -t ${IMAGE_NAME} .
                 '''
             }
         }
 
-    } // end stages
-} // end pipeline
+        stage('Docker-Login'){
+            steps{
+                script{
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
+                            sh "echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin"
+                        }
+                }
+            }
+        }
+
+        stage('Docker-push'){
+            steps{
+                sh '''
+                    docker push ${IMAGE_NAME}
+                '''
+            }
+        }
+
+    } 
+} 
